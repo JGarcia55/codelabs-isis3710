@@ -4,7 +4,7 @@ import { Codelab } from "@/types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data", "codelabs");
 
-export function getAllCodelabs(): Codelab[] {
+function readAllCodelabs(): Codelab[] {
   if (!fs.existsSync(DATA_DIR)) return [];
   const files = fs
     .readdirSync(DATA_DIR)
@@ -20,11 +20,19 @@ export function getAllCodelabs(): Codelab[] {
         return null;
       }
     })
-    .filter((c): c is Codelab => c !== null && c.published !== false)
+    .filter((c): c is Codelab => c !== null)
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+}
+
+export function getAllCodelabs(): Codelab[] {
+  return readAllCodelabs().filter((c) => c.published !== false);
+}
+
+export function getAllCodelabsRaw(): Codelab[] {
+  return readAllCodelabs();
 }
 
 export function getCodelab(slug: string): Codelab | null {

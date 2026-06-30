@@ -1,8 +1,8 @@
-import { getAllCodelabs } from "@/lib/codelabs";
+import { getAllCodelabsRaw } from "@/lib/codelabs";
 import EditPageClient from "./client";
 
 export function generateStaticParams() {
-  const codelabs = getAllCodelabs();
+  const codelabs = getAllCodelabsRaw();
   return codelabs.map((c) => ({ slug: c.slug }));
 }
 

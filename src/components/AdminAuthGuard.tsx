@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import SaveIndicator from "@/components/SaveIndicator";
 
 const ADMIN_PASSWORD =
   process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
@@ -74,5 +75,10 @@ export default function AdminAuthGuard({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <SaveIndicator />
+    </>
+  );
 }
