@@ -7,7 +7,6 @@ import { saveCodelab } from "@/lib/github";
 import { useRouter } from "next/navigation";
 import { Codelab } from "@/types";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "/codelabs-isis3710";
 const TOKEN = process.env.NEXT_PUBLIC_CODELABS_PAT || "";
 const OWNER = process.env.NEXT_PUBLIC_GITHUB_OWNER || "JGarcia55";
 const REPO = process.env.NEXT_PUBLIC_GITHUB_REPO || "codelabs-isis3710";
@@ -79,7 +78,7 @@ export default function EditPageClient({
 
     const ok = await saveCodelab(updated);
     if (ok) {
-      router.push(`${basePath}/admin`);
+      router.push("/admin");
     } else {
       setSaveError("Error al guardar los cambios.");
       setIsSaving(false);

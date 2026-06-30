@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Codelab } from "@/types";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "/codelabs-isis3710";
 const TOKEN = process.env.NEXT_PUBLIC_CODELABS_PAT || "";
 const OWNER = process.env.NEXT_PUBLIC_GITHUB_OWNER || "JGarcia55";
 const REPO = process.env.NEXT_PUBLIC_GITHUB_REPO || "codelabs-isis3710";
@@ -66,7 +65,7 @@ export default function AdminPage() {
           </p>
         </div>
         <Link
-          href={`${basePath}/admin/new`}
+          href="/admin/new"
           className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors"
         >
           + Nuevo Codelab
@@ -79,7 +78,7 @@ export default function AdminPage() {
         <div className="text-center py-12 text-gray-400 border border-dashed border-step-border rounded-lg">
           <p className="mb-2">No hay codelabs creados</p>
           <Link
-            href={`${basePath}/admin/new`}
+            href="/admin/new"
             className="text-primary text-sm hover:underline"
           >
             Crear el primer codelab
@@ -101,13 +100,13 @@ export default function AdminPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Link
-                  href={`${basePath}/codelabs/${c.slug}`}
+                  href={`/codelabs/${c.slug}`}
                   className="text-xs text-gray-500 hover:text-primary"
                 >
                   Ver
                 </Link>
                 <Link
-                  href={`${basePath}/admin/edit/${c.slug}`}
+                  href={`/admin/edit/${c.slug}`}
                   className="text-xs text-primary hover:underline"
                 >
                   Editar

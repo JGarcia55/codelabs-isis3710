@@ -6,8 +6,6 @@ import { saveCodelab } from "@/lib/github";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "/codelabs-isis3710";
-
 export default function NewCodelabPage() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
@@ -41,7 +39,7 @@ export default function NewCodelabPage() {
 
     const ok = await saveCodelab(codelab);
     if (ok) {
-      router.push(`${basePath}/admin`);
+      router.push("/admin");
     } else {
       setSaveError(
         "Error al guardar el codelab. Verifica que el token de GitHub esté configurado correctamente."

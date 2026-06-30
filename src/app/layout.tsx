@@ -19,8 +19,6 @@ export const metadata: Metadata = {
     "Plataforma de codelabs interactivos para aprender tecnologías web.",
 };
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "/codelabs-isis3710";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,23 +32,14 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-gray-50">
         <header className="bg-white border-b border-step-border">
           <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-            <Link
-              href={`${basePath}/`}
-              className="font-bold text-lg text-primary"
-            >
+            <Link href="/" className="font-bold text-lg text-primary">
               Codelabs ISIS3710
             </Link>
             <nav className="flex items-center gap-4 text-sm">
-              <Link
-                href={`${basePath}/`}
-                className="text-gray-600 hover:text-primary transition-colors"
-              >
+              <Link href="/" className="text-gray-600 hover:text-primary transition-colors">
                 Codelabs
               </Link>
-              <Link
-                href={`${basePath}/admin`}
-                className="text-gray-400 hover:text-primary transition-colors text-xs"
-              >
+              <Link href="/admin" className="text-gray-400 hover:text-primary transition-colors text-xs">
                 Admin
               </Link>
             </nav>

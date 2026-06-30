@@ -2,11 +2,9 @@ import { Codelab } from "@/types";
 import Link from "next/link";
 
 export default function CodelabCard({ codelab }: { codelab: Codelab }) {
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "/codelabs-isis3710";
-
   return (
     <Link
-      href={`${basePath}/codelabs/${codelab.slug}`}
+      href={`/codelabs/${codelab.slug}`}
       className="block border border-step-border rounded-lg p-5 hover:shadow-md hover:border-primary/30 transition-all bg-white"
     >
       <h2 className="text-lg font-semibold text-foreground mb-2">
