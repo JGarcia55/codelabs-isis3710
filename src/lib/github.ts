@@ -1,0 +1,85 @@
+import { Codelab } from "@/types";
+
+const OWNER = process.env.NEXT_PUBLIC_GITHUB_OWNER || "JGarcia55";
+const REPO = process.env.NEXT_PUBLIC_GITHUB_REPO || "codelabs-isis3710";
+const TOKEN = process.env.NEXT_PUBLIC_CODELABS_PAT || "";
+
+const BASE_URL = "https://api.github.com";
+
+function utf8ToBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  const bin = Array.from(bytes, (b) => String.fromCodePoint(b)).join("");
+  return btoa(bin);
+}
+
+export async function saveCodelab(codelab: Codelab): Promise<boolean> {
+  if (!TOKEN) {
+    console.error("GitHub PAT not configured");
+    return false;
+  }
+
+  const path = `public/data/codelabs/${codelab.slug}.json`;
+  const url = `${BASE_URL}/repos/${OWNER}/${REPO}/contents/${path}`;
+
+  const existing = await fetch(url, {
+    headers: { Authorization: `Bearer ${TOKEN}` },
+  });
+
+  const body: Record<string, unknown> = {
+    message: `${existing.ok ? "Update" : "Add"} codelab: ${codelab.slug}`,
+    content: utf8ToBase64(JSON.stringify(codelab, null, 2)),
+  };
+
+  if (existing.ok) {
+    const existingData = await existing.json();
+    body.sha = (existingData as { sha: string }).sha;
+  }
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("GitHub API error:", err);
+    return false;
+  }
+
+  return true;
+}
+
+export async function listCodelabs(): Promise<Codelab[]> {
+  if (!TOKEN) return [];
+
+  const url = `${BASE_URL}/repos/${OWNER}/${REPO}/contents/public/data/codelabs`;
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${TOKEN}` },
+  });
+
+  if (!res.ok) return [];
+
+  const files = (await res.json()) as { name: string; download_url: string }[];
+  const jsonFiles = files.filter((f) => f.name.endsWith(".json"));
+
+  const codelabs: Codelab[] = [];
+  for (const file of jsonFiles) {
+    try {
+      const contentRes = await fetch(file.download_url);
+      const data = (await contentRes.json()) as Codelab;
+      codelabs.push(data);
+    } catch {
+      // skip invalid files
+    }
+  }
+
+  return codelabs.sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}

@@ -1,0 +1,37 @@
+{
+  "title": "Introducción a Next.js",
+  "slug": "introduccion-a-nextjs",
+  "description": "Aprende los fundamentos de Next.js, el framework de React para aplicaciones web full-stack.",
+  "author": "Equipo Codelabs",
+  "duration": 30,
+  "tags": ["nextjs", "react", "web"],
+  "steps": [
+    {
+      "title": "¿Qué es Next.js?",
+      "content": "Next.js es un framework de React que te permite construir aplicaciones web full-stack. Proporciona:\n\n- **Renderizado híbrido**: SSG, SSR, ISR\n- **Enrutamiento basado en archivos**\n- **API routes** para construir tu backend\n- **Optimizaciones automáticas** (imágenes, fuentes, bundles)\n\n```bash\nnpx create-next-app@latest mi-app\n```\n\nEs mantenido por Vercel y tiene una gran comunidad.",
+      "duration": 5
+    },
+    {
+      "title": "Estructura del proyecto",
+      "content": "Al crear un proyecto con Next.js, obtienes esta estructura:\n\n```\nmi-app/\n├── app/\n│   ├── layout.tsx\n│   └── page.tsx\n├── public/\n├── next.config.ts\n├── package.json\n└── tsconfig.json\n```\n\n- `app/` — tus páginas y layouts (App Router)\n- `public/` — archivos estáticos\n- `next.config.ts` — configuración del framework\n\n> **Nota**: Next.js 16 usa el App Router por defecto.",
+      "duration": 5
+    },
+    {
+      "title": "Tu primera página",
+      "content": "En el App Router, cada archivo `page.tsx` dentro de una carpeta se convierte en una ruta:\n\n```tsx\n// app/page.tsx → /\nexport default function Home() {\n  return <h1>Hola Mundo</h1>;\n}\n\n// app/about/page.tsx → /about\nexport default function About() {\n  return <h1>Acerca de</h1>;\n}\n```\n\nLas rutas dinámicas usan corchetes:\n```\napp/blog/[slug]/page.tsx → /blog/mi-articulo\n```",
+      "duration": 8
+    },
+    {
+      "title": "Layouts y navegación",
+      "content": "Los layouts envuelven páginas y persisten entre navegaciones:\n\n```tsx\n// app/layout.tsx\nexport default function RootLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <html lang=\"es\">\n      <body>\n        <header>Mi App</header>\n        {children}\n        <footer>© 2026</footer>\n      </body>\n    </html>\n  );\n}\n```\n\nPara navegar entre páginas, usa el componente `Link`:\n```tsx\nimport Link from 'next/link';\n\n<Link href=\"/about\">Acerca de</Link>\n```",
+      "duration": 7
+    },
+    {
+      "title": "Componentes Cliente y Servidor",
+      "content": "Por defecto, todos los componentes en Next.js son **Server Components**. Se renderizan en el servidor y envía solo HTML al cliente.\n\nPara usar interactividad (estado, efectos, eventos), agrega `'use client'`:\n\n```tsx\n'use client'\nimport { useState } from 'react';\n\nexport default function Contador() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(c + 1)}>{count}</button>;\n}\n```\n\n**Regla general**: Server Components para datos, Client Components para interacción.",
+      "duration": 5
+    }
+  ],
+  "createdAt": "2026-06-30T10:00:00.000Z",
+  "updatedAt": "2026-06-30T10:00:00.000Z"
+}
