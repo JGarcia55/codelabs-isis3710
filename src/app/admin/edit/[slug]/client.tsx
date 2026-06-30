@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from "react";
 import CodelabForm from "@/components/CodelabForm";
 import { parseSteps } from "@/lib/markdown";
-import { saveCodelab } from "@/lib/github";
+import { saveCodelab, base64ToUtf8 } from "@/lib/github";
 import { useRouter } from "next/navigation";
 import { Codelab } from "@/types";
 
@@ -39,7 +39,7 @@ export default function EditPageClient({
           return;
         }
         const data = (await res.json()) as { content: string };
-        const decoded = JSON.parse(atob(data.content)) as Codelab;
+        const decoded = JSON.parse(base64ToUtf8(data.content)) as Codelab;
         setCodelab(decoded);
       } catch {
         // ignore

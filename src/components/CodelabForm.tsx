@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Codelab } from "@/types";
 import { parseSteps, stepsToMarkdown } from "@/lib/markdown";
 import WordUploader from "@/components/WordUploader";
@@ -44,6 +44,7 @@ export default function CodelabForm({
   );
   const [manualSlug, setManualSlug] = useState(!!initialData);
   const [error, setError] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (!manualSlug && title) {
@@ -187,12 +188,37 @@ export default function CodelabForm({
           <label className="block text-sm font-medium">
             Contenido (Markdown) <span className="text-red-500">*</span>
           </label>
-          <span className="text-xs text-gray-400">
-            Separa los pasos con{" "}
-            <code className="bg-step-bg px-1 rounded">&lt;!-- step --&gt;</code>
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const ta = textareaRef.current;
+                if (!ta) return;
+                const sep = "\n\n<!-- step -->\n\n";
+                const start = ta.selectionStart;
+                const end = ta.selectionEnd;
+                const before = markdown.substring(0, start);
+                const after = markdown.substring(end);
+                const updated = before + sep + after;
+                setMarkdown(updated);
+                requestAnimationFrame(() => {
+                  const pos = start + sep.length;
+                  ta.setSelectionRange(pos, pos);
+                  ta.focus();
+                });
+              }}
+              className="text-xs text-primary hover:text-primary-dark border border-primary/30 rounded px-2 py-1 hover:bg-step-active transition-colors cursor-pointer"
+            >
+              + Insertar &lt;!-- step --&gt;
+            </button>
+            <span className="text-xs text-gray-400">
+              Separa los pasos con{" "}
+              <code className="bg-step-bg px-1 rounded">&lt;!-- step --&gt;</code>
+            </span>
+          </div>
         </div>
         <textarea
+          ref={textareaRef}
           value={markdown}
           onChange={(e) => setMarkdown(e.target.value)}
           rows={16}
