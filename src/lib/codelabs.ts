@@ -20,7 +20,7 @@ export function getAllCodelabs(): Codelab[] {
         return null;
       }
     })
-    .filter((c): c is Codelab => c !== null)
+    .filter((c): c is Codelab => c !== null && c.published !== false)
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

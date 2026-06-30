@@ -12,6 +12,7 @@ export interface Codelab {
   duration?: number
   tags?: string[]
   steps: Step[]
+  published?: boolean
   createdAt: string
   updatedAt: string
 }

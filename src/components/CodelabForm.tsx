@@ -15,6 +15,7 @@ interface CodelabFormProps {
     duration: number
     tags: string[]
     markdown: string
+    published: boolean
   }) => Promise<void>
   isSaving: boolean
 }
@@ -41,6 +42,9 @@ export default function CodelabForm({
   const [tags, setTags] = useState(initialData?.tags?.join(", ") || "");
   const [markdown, setMarkdown] = useState(
     initialData ? stepsToMarkdown(initialData.steps) : ""
+  );
+  const [published, setPublished] = useState(
+    initialData?.published ?? true
   );
   const [manualSlug, setManualSlug] = useState(!!initialData);
   const [error, setError] = useState("");
@@ -95,6 +99,7 @@ export default function CodelabForm({
         .map((t) => t.trim())
         .filter(Boolean),
       markdown: markdown.trim(),
+      published,
     });
   }
 
@@ -132,6 +137,29 @@ export default function CodelabForm({
               placeholder="introduccion-a-nextjs"
             />
           </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-medium">Público</label>
+          <button
+            type="button"
+            onClick={() => setPublished(!published)}
+            className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors cursor-pointer ${
+              published ? "bg-primary" : "bg-gray-300"
+            }`}
+            role="switch"
+            aria-checked={published}
+          >
+            <span
+              className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm ring-0 transition-transform ${
+                published ? "translate-x-4" : "translate-x-0"
+              }`}
+            />
+          </button>
+          <span className="text-xs text-gray-400">
+            {published
+              ? "Visible en la página principal"
+              : "Solo visible en el panel de administración"}
+          </span>
         </div>
       </div>
 

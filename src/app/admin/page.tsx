@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Codelab } from "@/types";
+import ConfirmModal from "@/components/ConfirmModal";
 
 const TOKEN = process.env.NEXT_PUBLIC_CODELABS_PAT || "";
 const OWNER = process.env.NEXT_PUBLIC_GITHUB_OWNER || "JGarcia55";
@@ -11,49 +12,83 @@ const REPO = process.env.NEXT_PUBLIC_GITHUB_REPO || "codelabs-isis3710";
 export default function AdminPage() {
   const [codelabs, setCodelabs] = useState<Codelab[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<Codelab | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      if (!TOKEN) {
+  async function loadCodelabs() {
+    if (!TOKEN) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/public/data/codelabs`;
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${TOKEN}` },
+      });
+      if (!res.ok) {
         setLoading(false);
         return;
       }
-      try {
-        const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/public/data/codelabs`;
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${TOKEN}` },
-        });
-        if (!res.ok) {
-          setLoading(false);
-          return;
+      const files = (await res.json()) as {
+        name: string
+        download_url: string
+      }[];
+      const jsonFiles = files.filter((f) => f.name.endsWith(".json"));
+      const items: Codelab[] = [];
+      for (const file of jsonFiles) {
+        try {
+          const r = await fetch(file.download_url);
+          items.push((await r.json()) as Codelab);
+        } catch {
+          // skip
         }
-        const files = (await res.json()) as {
-          name: string
-          download_url: string
-        }[];
-        const jsonFiles = files.filter((f) => f.name.endsWith(".json"));
-        const items: Codelab[] = [];
-        for (const file of jsonFiles) {
-          try {
-            const r = await fetch(file.download_url);
-            items.push((await r.json()) as Codelab);
-          } catch {
-            // skip
-          }
-        }
-        items.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setCodelabs(items);
-      } catch {
-        // ignore
-      } finally {
-        setLoading(false);
       }
+      items.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setCodelabs(items);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
     }
-    load();
+  }
+
+  useEffect(() => {
+    loadCodelabs();
   }, []);
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    const slug = deleteTarget.slug;
+    setDeleteTarget(null);
+
+    const path = `public/data/codelabs/${slug}.json`;
+    const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`;
+
+    const shaRes = await fetch(url, {
+      headers: { Authorization: `Bearer ${TOKEN}` },
+    });
+    if (!shaRes.ok) return;
+
+    const { sha } = (await shaRes.json()) as { sha: string };
+
+    const delRes = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: `Delete codelab: ${slug}`,
+        sha,
+      }),
+    });
+
+    if (delRes.ok) {
+      loadCodelabs();
+    }
+  }
 
   return (
     <div>
@@ -91,14 +126,25 @@ export default function AdminPage() {
               key={c.slug}
               className="flex items-center justify-between border border-step-border rounded-lg px-4 py-3 bg-white"
             >
-              <div>
-                <h3 className="font-medium">{c.title}</h3>
-                <p className="text-xs text-gray-400">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium truncate">{c.title}</h3>
+                  {(c.published === undefined || c.published) ? (
+                    <span className="text-[10px] text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5 shrink-0">
+                      Público
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-full px-1.5 py-0.5 shrink-0">
+                      Borrador
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
                   {c.steps.length} pasos ·{" "}
                   {new Date(c.createdAt).toLocaleDateString("es-CO")}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0 ml-3">
                 <Link
                   href={`/codelabs/${c.slug}`}
                   className="text-xs text-gray-500 hover:text-primary"
@@ -111,11 +157,32 @@ export default function AdminPage() {
                 >
                   Editar
                 </Link>
+                <button
+                  onClick={() => setDeleteTarget(c)}
+                  className="text-xs text-red-500 hover:text-red-700 cursor-pointer"
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Eliminar codelab"
+        message={
+          deleteTarget
+            ? `¿Estás seguro de eliminar "${deleteTarget.title}"? Esta acción no se puede deshacer.`
+            : ""
+        }
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

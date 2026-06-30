@@ -21,6 +21,37 @@ export function base64ToUtf8(str: string): string {
   return new TextDecoder().decode(bytes);
 }
 
+export async function deleteCodelab(slug: string): Promise<boolean> {
+  if (!TOKEN) {
+    console.error("GitHub PAT not configured");
+    return false;
+  }
+
+  const path = `public/data/codelabs/${slug}.json`;
+  const url = `${BASE_URL}/repos/${OWNER}/${REPO}/contents/${path}`;
+
+  const getRes = await fetch(url, {
+    headers: { Authorization: `Bearer ${TOKEN}` },
+  });
+  if (!getRes.ok) return false;
+
+  const data = (await getRes.json()) as { sha: string };
+
+  const delRes = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      message: `Delete codelab: ${slug}`,
+      sha: data.sha,
+    }),
+  });
+
+  return delRes.ok;
+}
+
 export async function saveCodelab(codelab: Codelab): Promise<boolean> {
   if (!TOKEN) {
     console.error("GitHub PAT not configured");

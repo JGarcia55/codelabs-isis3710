@@ -2,8 +2,9 @@
 
 import { use, useState, useEffect } from "react";
 import CodelabForm from "@/components/CodelabForm";
+import ConfirmModal from "@/components/ConfirmModal";
 import { parseSteps } from "@/lib/markdown";
-import { saveCodelab, base64ToUtf8 } from "@/lib/github";
+import { saveCodelab, deleteCodelab, base64ToUtf8 } from "@/lib/github";
 import { useRouter } from "next/navigation";
 import { Codelab } from "@/types";
 
@@ -22,6 +23,7 @@ export default function EditPageClient({
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -58,6 +60,7 @@ export default function EditPageClient({
     duration: number
     tags: string[]
     markdown: string
+    published: boolean
   }) {
     setIsSaving(true);
     setSaveError("");
@@ -72,6 +75,7 @@ export default function EditPageClient({
       duration: data.duration || undefined,
       tags: data.tags.length > 0 ? data.tags : undefined,
       steps,
+      published: data.published,
       createdAt: codelab?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -99,9 +103,27 @@ export default function EditPageClient({
     );
   }
 
+  async function handleDelete() {
+    setShowDeleteModal(false);
+    const ok = await deleteCodelab(slug);
+    if (ok) {
+      router.push("/admin");
+    } else {
+      setSaveError("Error al eliminar el codelab.");
+    }
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Editar: {codelab.title}</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Editar: {codelab.title}</h1>
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+        >
+          Eliminar
+        </button>
+      </div>
 
       {saveError && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2 mb-4">
@@ -114,6 +136,19 @@ export default function EditPageClient({
         onSave={handleSave}
         isSaving={isSaving}
       />
+
+      {showDeleteModal && (
+        <ConfirmModal
+          open={showDeleteModal}
+          title="Eliminar codelab"
+          message={`¿Estás seguro de eliminar "${codelab.title}"? Esta acción no se puede deshacer y el codelab dejará de estar disponible.`}
+          confirmLabel="Eliminar"
+          cancelLabel="Cancelar"
+          variant="danger"
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+      )}
     </div>
   );
 }

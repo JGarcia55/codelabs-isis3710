@@ -19,6 +19,7 @@ export default function NewCodelabPage() {
     duration: number
     tags: string[]
     markdown: string
+    published: boolean
   }) {
     setIsSaving(true);
     setSaveError("");
@@ -33,6 +34,7 @@ export default function NewCodelabPage() {
       duration: data.duration || undefined,
       tags: data.tags.length > 0 ? data.tags : undefined,
       steps,
+      published: data.published,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

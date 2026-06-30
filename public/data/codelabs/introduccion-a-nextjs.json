@@ -4,6 +4,7 @@
   "description": "Aprende los fundamentos de Next.js, el framework de React para aplicaciones web full-stack.",
   "author": "Equipo Codelabs",
   "duration": 30,
+  "published": true,
   "tags": ["nextjs", "react", "web"],
   "steps": [
     {
