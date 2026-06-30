@@ -1,0 +1,22 @@
+{
+  "title": "Prueba nextjs",
+  "slug": "prueba-nextjs",
+  "description": "Esto es una prueba",
+  "author": "JGarcia55",
+  "duration": 10,
+  "tags": [
+    "Next JS"
+  ],
+  "steps": [
+    {
+      "title": "Paso 1",
+      "content": "[!NOTE]  \nHighlights information that users should take into account, even when skimming."
+    },
+    {
+      "title": "Paso 2",
+      "content": "Esto es un paso\n\n[!WARNING]  \nCritical content demanding immediate user attention due to potential risks."
+    }
+  ],
+  "createdAt": "2026-06-30T16:54:13.767Z",
+  "updatedAt": "2026-06-30T16:54:13.767Z"
+}
