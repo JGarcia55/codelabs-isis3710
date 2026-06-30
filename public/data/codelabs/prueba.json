@@ -1,0 +1,16 @@
+{
+  "title": "Prueba",
+  "slug": "prueba",
+  "description": "fsdafsdafsdaf",
+  "author": "fads",
+  "duration": 10,
+  "steps": [
+    {
+      "title": "Paso",
+      "content": "dasd\nasd\nasd\nsad\na"
+    }
+  ],
+  "published": true,
+  "createdAt": "2026-06-30T22:48:43.230Z",
+  "updatedAt": "2026-06-30T22:48:43.230Z"
+}
