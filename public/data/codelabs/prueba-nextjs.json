@@ -1,7 +1,7 @@
 {
   "title": "Prueba nextjs",
   "slug": "prueba-nextjs",
-  "description": "Esto es una prueba",
+  "description": "Esto es una pruebaa",
   "author": "JGarcia55",
   "duration": 10,
   "tags": [
@@ -19,5 +19,5 @@
   ],
   "published": true,
   "createdAt": "2026-06-30T16:54:13.767Z",
-  "updatedAt": "2026-06-30T22:41:23.884Z"
+  "updatedAt": "2026-06-30T22:47:53.143Z"
 }
