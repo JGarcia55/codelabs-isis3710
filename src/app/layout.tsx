@@ -31,7 +31,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-gray-50">
         <header className="bg-white border-b border-step-border">
-          <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="px-4 md:px-6 h-14 flex items-center justify-between">
             <Link href="/" className="font-bold text-lg text-primary">
               Codelabs ISIS3710
             </Link>
@@ -45,7 +45,7 @@ export default function RootLayout({
             </nav>
           </div>
         </header>
-        <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+        <main className="flex-1 w-full px-4 md:px-6 py-6">
           {children}
         </main>
         <footer className="border-t border-step-border py-4 text-center text-xs text-gray-400">
