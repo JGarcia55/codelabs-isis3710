@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Codelab } from "@/types";
 import ConfirmModal from "@/components/ConfirmModal";
+import { deleteCodelab } from "@/lib/github";
+import { useOperationStatus } from "@/hooks/useOperationStatus";
 
 const TOKEN = process.env.NEXT_PUBLIC_CODELABS_PAT || "";
 const OWNER = process.env.NEXT_PUBLIC_GITHUB_OWNER || "JGarcia55";
@@ -13,6 +15,8 @@ export default function AdminPage() {
   const [codelabs, setCodelabs] = useState<Codelab[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Codelab | null>(null);
+  const [search, setSearch] = useState("");
+  const busy = useOperationStatus();
 
   async function loadCodelabs() {
     if (!TOKEN) {
@@ -59,92 +63,91 @@ export default function AdminPage() {
   }, []);
 
   async function handleDelete() {
-    if (!deleteTarget) return;
+    if (!deleteTarget || busy) return;
     const slug = deleteTarget.slug;
     setDeleteTarget(null);
-
-    const path = `public/data/codelabs/${slug}.json`;
-    const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`;
-
-    const shaRes = await fetch(url, {
-      headers: { Authorization: `Bearer ${TOKEN}` },
-    });
-    if (!shaRes.ok) return;
-
-    const { sha } = (await shaRes.json()) as { sha: string };
-
-    const delRes = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: `Delete codelab: ${slug}`,
-        sha,
-      }),
-    });
-
-    if (delRes.ok) {
-      loadCodelabs();
-    }
+    const ok = await deleteCodelab(slug);
+    if (ok) loadCodelabs();
   }
+
+  const filtered = codelabs.filter((c) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      c.title.toLowerCase().includes(q) ||
+      c.tags?.some((t) => t.toLowerCase().includes(q))
+    );
+  });
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Administración</h1>
-          <p className="text-sm text-gray-500">
-            Gestiona tus codelabs
-          </p>
+          <p className="text-sm text-gray-500">Gestiona tus codelabs</p>
         </div>
         <Link
           href="/admin/new"
-          className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors"
+          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            busy
+              ? "bg-gray-300 text-gray-500 pointer-events-none"
+              : "bg-primary text-white hover:bg-primary-dark"
+          }`}
         >
           + Nuevo Codelab
         </Link>
       </div>
 
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Buscar codelab por título o tags..."
+        className="w-full border border-step-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary mb-6"
+      />
+
       {loading ? (
         <div className="text-center py-12 text-gray-400">Cargando...</div>
-      ) : codelabs.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-gray-400 border border-dashed border-step-border rounded-lg">
-          <p className="mb-2">No hay codelabs creados</p>
-          <Link
-            href="/admin/new"
-            className="text-primary text-sm hover:underline"
-          >
-            Crear el primer codelab
-          </Link>
+          <p className="mb-2">
+            {search
+              ? "No se encontraron codelabs con ese criterio"
+              : "No hay codelabs creados"}
+          </p>
+          {!search && (
+            <Link
+              href="/admin/new"
+              className="text-primary text-sm hover:underline"
+            >
+              Crear el primer codelab
+            </Link>
+          )}
         </div>
       ) : (
-        <div className="space-y-3">
-          {codelabs.map((c) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((c) => (
             <div
               key={c.slug}
-              className="flex items-center justify-between border border-step-border rounded-lg px-4 py-3 bg-white"
+              className="border border-step-border rounded-lg px-4 py-4 bg-white flex flex-col"
             >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium truncate">{c.title}</h3>
-                  {(c.published === undefined || c.published) ? (
-                    <span className="text-[10px] text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5 shrink-0">
-                      Público
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-full px-1.5 py-0.5 shrink-0">
-                      Borrador
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {c.steps.length} pasos ·{" "}
-                  {new Date(c.createdAt).toLocaleDateString("es-CO")}
-                </p>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-medium truncate text-sm">{c.title}</h3>
+                {(c.published === undefined || c.published) ? (
+                  <span className="text-[10px] text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5 shrink-0">
+                    Público
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-full px-1.5 py-0.5 shrink-0">
+                    Borrador
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-2 shrink-0 ml-3">
+              <p className="text-xs text-gray-400 mb-3">
+                {c.steps.length} paso{c.steps.length !== 1 ? "s" : ""} ·{" "}
+                {new Date(c.createdAt).toLocaleDateString("es-CO")}
+              </p>
+              <div className="flex items-center gap-3 mt-auto pt-2 border-t border-step-border">
                 <Link
                   href={`/codelabs/${c.slug}`}
                   className="text-xs text-gray-500 hover:text-primary"
@@ -159,7 +162,12 @@ export default function AdminPage() {
                 </Link>
                 <button
                   onClick={() => setDeleteTarget(c)}
-                  className="text-xs text-red-500 hover:text-red-700 cursor-pointer"
+                  disabled={busy}
+                  className={`text-xs cursor-pointer ${
+                    busy
+                      ? "text-gray-300 cursor-not-allowed"
+                      : "text-red-500 hover:text-red-700"
+                  }`}
                 >
                   Eliminar
                 </button>

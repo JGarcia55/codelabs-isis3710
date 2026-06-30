@@ -2,7 +2,7 @@
 
 import CodelabForm from "@/components/CodelabForm";
 import { parseSteps } from "@/lib/markdown";
-import { saveCodelab } from "@/lib/github";
+import { saveCodelab, isOperationInProgress } from "@/lib/github";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -21,6 +21,7 @@ export default function NewCodelabPage() {
     markdown: string
     published: boolean
   }) {
+    if (isOperationInProgress()) return;
     setIsSaving(true);
     setSaveError("");
 

@@ -7,6 +7,7 @@ import { parseSteps } from "@/lib/markdown";
 import { saveCodelab, deleteCodelab, base64ToUtf8 } from "@/lib/github";
 import { useRouter } from "next/navigation";
 import { Codelab } from "@/types";
+import { useOperationStatus } from "@/hooks/useOperationStatus";
 
 const TOKEN = process.env.NEXT_PUBLIC_CODELABS_PAT || "";
 const OWNER = process.env.NEXT_PUBLIC_GITHUB_OWNER || "JGarcia55";
@@ -24,6 +25,7 @@ export default function EditPageClient({
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const busy = useOperationStatus();
 
   useEffect(() => {
     async function load() {
@@ -89,6 +91,17 @@ export default function EditPageClient({
     }
   }
 
+  async function handleDelete() {
+    if (busy || isSaving) return;
+    setShowDeleteModal(false);
+    const ok = await deleteCodelab(slug);
+    if (ok) {
+      router.push("/admin");
+    } else {
+      setSaveError("Error al eliminar el codelab.");
+    }
+  }
+
   if (loading) {
     return (
       <div className="text-center py-12 text-gray-400">Cargando codelab...</div>
@@ -103,23 +116,18 @@ export default function EditPageClient({
     );
   }
 
-  async function handleDelete() {
-    setShowDeleteModal(false);
-    const ok = await deleteCodelab(slug);
-    if (ok) {
-      router.push("/admin");
-    } else {
-      setSaveError("Error al eliminar el codelab.");
-    }
-  }
-
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Editar: {codelab.title}</h1>
         <button
           onClick={() => setShowDeleteModal(true)}
-          className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+          disabled={busy || isSaving}
+          className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition-colors cursor-pointer ${
+            busy || isSaving
+              ? "text-gray-300 border-gray-200 cursor-not-allowed"
+              : "text-red-600 border-red-200 hover:bg-red-50"
+          }`}
         >
           Eliminar
         </button>
