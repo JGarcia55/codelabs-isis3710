@@ -27,10 +27,6 @@ function readAllCodelabs(): Codelab[] {
     );
 }
 
-export function getAllCodelabs(): Codelab[] {
-  return readAllCodelabs().filter((c) => c.published !== false);
-}
-
 export function getAllCodelabsRaw(): Codelab[] {
   return readAllCodelabs();
 }
